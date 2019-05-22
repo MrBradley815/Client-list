@@ -3,6 +3,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import StaleElementReferenceException
 import time
 
 then = time.time()
@@ -35,12 +36,20 @@ wait.until(EC.frame_to_be_available_and_switch_to_it('ContentFrame'))
 
 x = 4000
 while(x > 1):
-	driver.find_element_by_xpath("//html/body/div[2]/table/tbody/tr[y]/td[6]/input[3]").click()
-	driver.switch_to.alert.accept()
-
-	wait.until(EC.element_to_be_clickable((By.XPATH, "//html/body/form/input")))
+	try:
+		element = wait.until(EC.element_to_be_clickable((By.XPATH, "//input[@name='Delete']")))
+		element.click()
+		wait.until(EC.alert_is_present())
+		alert = driver.switch_to.alert
+		alert.accept()
+	except StaleElementReferenceException as Exception:
+		element = wait.until(EC.element_to_be_clickable((By.XPATH, "//input[@name='Delete']")))
+		element.click()
+		wait.until(EC.alert_is_present())
+		alert = driver.switch_to.alert
+		alert.accept()
 	x = x - 1
 
 now = time.time()
 
-print("It took: ", (now-then)/60, " minutes")
+print("It took: ", round((now-then)/60), " minutes")
